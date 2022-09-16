@@ -3,13 +3,13 @@ import { Amplify, Auth } from 'aws-amplify';
 Amplify.configure({
     Auth: {
         region: 'us-east-1',
-        userPoolId: process.env.AWS_COGNITO_POOL_ID,
-        userPoolWebClientId: process.env.AWS_COGNITO_CLIENT_ID,
+        userPoolId: process.env.REACT_APP_AWS_COGNITO_POOL_ID,
+        userPoolWebClientId: process.env.REACT_APP_AWS_COGNITO_CLIENT_ID,
         oauth: {
-            domain: process.env.AWS_COGNITO_HOSTED_UI_DOMAIN,
+            domain: process.env.REACT_APP_AWS_COGNITO_HOSTED_UI_DOMAIN,
             scope: ['email', 'profile', 'openid'],
-            redirectSignIn: process.env.OAUTH_SIGN_IN_REDIRECT_URL,
-            redirectSignOut: process.env.OAUTH_SIGN_OUT_REDIRECT_URL,
+            redirectSignIn: process.env.REACT_APP_OAUTH_SIGN_IN_REDIRECT_URL,
+            redirectSignOut: process.env.REACT_APP_OAUTH_SIGN_OUT_REDIRECT_URL,
             responseType: 'code',
         },
     },
