@@ -1,7 +1,7 @@
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 export async function getUserFragments(user) {
-    console.log('Requesting user fragments data...', { user });
+    console.log('Requesting user fragments data...');
     try {
         const res = await fetch(`${apiUrl}/v1/fragments`, {
             headers: user.authorizationHeaders(),
