@@ -13,6 +13,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { Auth, getUser } from './auth';
+import { getUserFragments } from './api'
 
 function App() {
     async function init() {
@@ -36,6 +37,8 @@ function App() {
         userSection.hidden = false;
         userSection.innerText = user.username;
         loginBtn.disabled = true;
+
+        getUserFragments(user);
     }
 
     React.useEffect(() => {

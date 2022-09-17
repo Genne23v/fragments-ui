@@ -34,6 +34,7 @@ async function getUser() {
             authorizationHeaders: (type = 'application/json') => {
                 const headers = { 'Content-Type': type };
                 headers['Authorization'] = `Bearer ${idToken}`;
+                console.log(headers, idToken)
                 return headers;
             },
         };
