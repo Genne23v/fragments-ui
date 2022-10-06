@@ -3,7 +3,7 @@ const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 export async function getUserFragments(user) {
     console.log('Requesting user fragments data...', apiUrl);
     try {
-        const res = await fetch(`${apiUrl}v1/fragments`, {
+        const res = await fetch(`${apiUrl}/v1/fragments`, {
             headers: user.authorizationHeaders(),
         });
 
@@ -23,7 +23,7 @@ export async function postFragment(user, text) {
         const headers = { 'Content-Type': 'text/plain'}
         headers['Authorization'] = `Bearer ${user.idToken}`
 
-        const res = await fetch(`${apiUrl}v1/fragments`, {
+        const res = await fetch(`${apiUrl}/v1/fragments`, {
             headers: headers,
             method: 'POST',
             crossDomain: true,
