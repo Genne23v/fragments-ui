@@ -19,15 +19,15 @@ export async function getUserFragments(user) {
 
 export async function postFragment(user, text) {
     try {
-        console.log('user idToken', user.idToken)
-        const headers = { 'Content-Type': 'text/plain'}
-        headers['Authorization'] = `Bearer ${user.idToken}`
+        console.log('user idToken', user.idToken);
+        const headers = { 'Content-Type': 'text/plain' };
+        headers['Authorization'] = `Bearer ${user.idToken}`;
 
         const res = await fetch(`${apiUrl}/v1/fragments`, {
             headers: headers,
             method: 'POST',
             crossDomain: true,
-            body: text
+            body: text,
         });
 
         if (!res.ok) {

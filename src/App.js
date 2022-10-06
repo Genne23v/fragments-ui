@@ -23,7 +23,6 @@ function App() {
     const [text, setText] = useState('');
 
     async function init() {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const userSection = document.querySelector('#user');
         const loginBtn = document.querySelector('#login');
         const logoutBtn = document.querySelector('#logout');
