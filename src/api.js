@@ -1,4 +1,5 @@
-const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+// const apiUrl = 'http://localhost:8080';
 
 export async function getUserFragments(user) {
     console.log('Requesting user fragments data...', apiUrl);
@@ -17,17 +18,21 @@ export async function getUserFragments(user) {
     }
 }
 
-export async function postFragment(user, text) {
+export async function postFragment(user, content, contentType) {
     try {
         console.log('user idToken', user.idToken);
-        const headers = { 'Content-Type': 'text/plain' };
+
+        if (!contentType) {
+            contentType = 'text/plain';
+        }
+        const headers = { 'Content-Type': contentType };
         headers['Authorization'] = `Bearer ${user.idToken}`;
 
         const res = await fetch(`${apiUrl}/v1/fragments`, {
             headers: headers,
             method: 'POST',
             crossDomain: true,
-            body: text,
+            body: content,
         });
 
         if (!res.ok) {
@@ -36,6 +41,7 @@ export async function postFragment(user, text) {
         const data = await res.json();
         console.log('Fragment has been posted', { data });
     } catch (err) {
+        console.log('api', apiUrl, process.env.REACT_APP_API_URL);
         console.error('Unable to call POST /v1/fragments', { err });
     }
 }

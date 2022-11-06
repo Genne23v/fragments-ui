@@ -27,6 +27,7 @@ import { FileList } from './FileList';
 function App() {
     const [text, setText] = useState('');
     const [droppedFiles, setDroppedFiles] = useState([]);
+    const [contentType, setContentType] = useState('');
 
     async function init() {
         const userSection = document.querySelector('#user');
@@ -62,12 +63,7 @@ function App() {
             return;
         }
 
-        if (droppedFiles.length === 0) {
-            await postFragment(user, text);
-        } else {
-            await postFragment(user, droppedFiles);
-        }
-
+        await postFragment(user, text, contentType);
         setText('');
     }
 
@@ -75,6 +71,15 @@ function App() {
         (item) => {
             if (item) {
                 const files = item.files;
+                setContentType(files[0].type);
+
+                setText('');
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const content = reader.result;
+                    setText(content);
+                };
+                reader.readAsText(files[0]);
                 setDroppedFiles(files);
             }
         },
