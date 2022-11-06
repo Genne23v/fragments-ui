@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
     AppBar,
     Box,
@@ -11,16 +11,22 @@ import {
     Avatar,
     IconButton,
     Paper,
+    Divider,
 } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Auth, getUser } from './auth';
 import { getUserFragments, postFragment } from './api';
+import { DropBox } from './DropBox';
+import { FileList } from './FileList';
 
 function App() {
     const [text, setText] = useState('');
+    const [droppedFiles, setDroppedFiles] = useState([]);
 
     async function init() {
         const userSection = document.querySelector('#user');
@@ -55,10 +61,25 @@ function App() {
         if (!user) {
             return;
         }
-        
-        await postFragment(user, text);
+
+        if (droppedFiles.length === 0) {
+            await postFragment(user, text);
+        } else {
+            await postFragment(user, droppedFiles);
+        }
+
         setText('');
     }
+
+    const handleFileDrop = useCallback(
+        (item) => {
+            if (item) {
+                const files = item.files;
+                setDroppedFiles(files);
+            }
+        },
+        [setDroppedFiles]
+    );
 
     React.useEffect(() => {
         init();
@@ -152,14 +173,17 @@ function App() {
                 <Container maxWidth='sm'>
                     <Box
                         sx={{
-                            marginTop: 25,
+                            marginTop: 15,
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             width: 600,
                             height: 300,
                         }}>
-                        <Paper style={{ padding: 18 }}>
+                        <Paper
+                            style={{ padding: 20 }}
+                            sx={{ width: 600 }}
+                            variant='elevation'>
                             <Typography
                                 variant='h5'
                                 align='center'
@@ -178,6 +202,18 @@ function App() {
                                 rows={4}
                                 onChange={(e) => setText(e.target.value)}
                             />
+                            <Divider sx={{ marginTop: 4, marginBottom: 4 }} />
+                            <Typography
+                                variant='h5'
+                                align='center'
+                                component='h3'
+                                gutterBottom>
+                                Or Drag a File Here to Upload
+                            </Typography>
+                            <DndProvider backend={HTML5Backend}>
+                                <DropBox onDrop={handleFileDrop} />
+                                <FileList files={droppedFiles} />
+                            </DndProvider>
                             <Button
                                 id='submit'
                                 type='submit'
