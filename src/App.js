@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     AppBar,
     Box,
@@ -12,6 +12,12 @@ import {
     IconButton,
     Paper,
     Divider,
+    TableContainer,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
 } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
 import LoginIcon from '@mui/icons-material/Login';
@@ -28,6 +34,7 @@ function App() {
     const [text, setText] = useState('');
     const [droppedFiles, setDroppedFiles] = useState([]);
     const [contentType, setContentType] = useState('');
+    const [fragments, setFragments] = useState([]);
 
     async function init() {
         const userSection = document.querySelector('#user');
@@ -43,16 +50,15 @@ function App() {
 
         const user = await getUser();
         if (!user) {
-            logoutBtn.disabled = true;
             return;
         }
+        const data = await getUserFragments(user);
+        setFragments(data.fragments);
         console.log({ user });
 
         userSection.hidden = false;
         userSection.innerText = user.username;
         loginBtn.disabled = true;
-
-        getUserFragments(user);
     }
 
     async function submit(e) {
@@ -65,6 +71,9 @@ function App() {
 
         await postFragment(user, text, contentType);
         setText('');
+        const data = await getUserFragments(user);
+        setFragments(data.fragments);
+        setDroppedFiles([]);
     }
 
     const handleFileDrop = useCallback(
@@ -86,35 +95,36 @@ function App() {
         [setDroppedFiles]
     );
 
-    React.useEffect(() => {
+    useEffect(() => {
         init();
     }, []);
 
     return (
-        <>
-            <Box sx={{ flexGrow: 1 }}>
-                <AppBar position='static'>
-                    <Toolbar>
-                        <Typography
-                            variant='h6'
-                            component='div'
-                            sx={{ flexGrow: 1 }}>
-                            Fragments UI
-                        </Typography>
-                        <IconButton
-                            size='large'
-                            aria-label='account of current user'
-                            aria-controls='menu-appbar'
-                            aria-haspopup='true'
-                            color='inherit'>
-                            <AccountCircle />
-                        </IconButton>
-                        <Typography
-                            id='user'
-                            variant='body1'
-                            component='span'></Typography>
-                    </Toolbar>
-                </AppBar>
+        <Box>
+            <AppBar position='static'>
+                <Toolbar>
+                    <Typography
+                        variant='h6'
+                        component='div'
+                        sx={{ flexGrow: 1 }}>
+                        Fragments UI
+                    </Typography>
+                    <IconButton
+                        size='large'
+                        aria-label='account of current user'
+                        aria-controls='menu-appbar'
+                        aria-haspopup='true'
+                        color='inherit'>
+                        <AccountCircle />
+                    </IconButton>
+                    <Typography
+                        id='user'
+                        variant='body1'
+                        component='span'></Typography>
+                </Toolbar>
+            </AppBar>
+
+            <Container>
                 <Container maxWidth='sm'>
                     <Box
                         sx={{
@@ -125,12 +135,12 @@ function App() {
                             width: 600,
                             height: 300,
                         }}>
-                        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                            <LockIcon />
-                        </Avatar>
-                        <Typography component='h1' variant='h5'>
-                            Log In
-                        </Typography>
+                        {/* <Avatar sx={{ m: 1, bgcolor: 'primary.info' }}>
+                        <LockIcon />
+                    </Avatar>
+                    <Typography component='h1' variant='h5'>
+                        Log In
+                    </Typography> */}
                         <TextField
                             margin='normal'
                             required
@@ -175,10 +185,10 @@ function App() {
                     </Box>
                 </Container>
 
-                <Container maxWidth='sm'>
+                <Container maxWidth='sm' sx={{ height: 560 }}>
                     <Box
                         sx={{
-                            marginTop: 15,
+                            marginTop: 5,
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -207,7 +217,7 @@ function App() {
                                 rows={4}
                                 onChange={(e) => setText(e.target.value)}
                             />
-                            <Divider sx={{ marginTop: 4, marginBottom: 4 }} />
+                            <Divider sx={{ marginTop: 3, marginBottom: 2 }} />
                             <Typography
                                 variant='h5'
                                 align='center'
@@ -224,7 +234,7 @@ function App() {
                                 type='submit'
                                 fullWidth
                                 variant='outlined'
-                                sx={{ mt: 3, mb: 2 }}
+                                sx={{ mt: 1, mb: 2 }}
                                 onClick={submit}>
                                 &nbsp;&nbsp;&nbsp;&nbsp;Submit
                                 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -232,8 +242,63 @@ function App() {
                         </Paper>
                     </Box>
                 </Container>
-            </Box>
-        </>
+
+                <Container maxWidth='md'>
+                    <TableContainer component={Paper} sx={{ width: '100%' }}>
+                        <Table aria-label='fragment metadata table'>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>ID</TableCell>
+                                    <TableCell>Created</TableCell>
+                                    <TableCell>Updated</TableCell>
+                                    <TableCell>Content Type</TableCell>
+                                    <TableCell>Size</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {fragments.length > 0 ? (
+                                    fragments.map((fragment) => {
+                                        return (
+                                            <TableRow key={fragment.id}>
+                                                <TableCell>
+                                                    {fragment.id}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        fragment.created
+                                                    ).toDateString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        fragment.updated
+                                                    ).toDateString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {fragment.type}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {fragment.size}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                ) : (
+                                    <TableRow>
+                                        <TableCell>
+                                            <Typography
+                                                variant='body1'
+                                                align='center'>
+                                                No fragments for the user
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Container>
+            </Container>
+        </Box>
     );
 }
 
