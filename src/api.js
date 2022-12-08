@@ -44,3 +44,87 @@ export async function postFragment(user, content, contentType) {
         console.error('Unable to call POST /v1/fragments', { err });
     }
 }
+
+export async function viewFragment(user, id, type) {
+    try {
+        const res = await fetch(`${apiUrl}/v1/fragments/${id}`, {
+            headers: user.authorizationHeaders(),
+            method: 'GET',
+        });
+
+        if (!res.ok) {
+            throw new Error(`${res.status} ${res.statusText}`);
+        }
+        let content;
+        if (type.startsWith('text/')) {
+            content = await res.text();
+        } else if (type.startsWith('application/')) {
+            content = await res.json();
+        } else if (type.startsWith('image/')) {
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            return url;
+        }
+        console.log('RESPONSE', res.body, content);
+        return content;
+    } catch (err) {
+        console.error('Unable to call GET /v1/fragments/:id', { err });
+    }
+}
+
+export async function convertFragment(user, id, ext) {
+    console.log('CONVERTING FRAGMENT REQUEST', id, ext);
+    try {
+        const res = await fetch(`${apiUrl}/v1/fragments/${id}.${ext}`, {
+            headers: user.authorizationHeaders(),
+            method: 'GET',
+        });
+        console.log('RESPONSE', res.body, ext);
+        if (!res.ok) {
+            throw new Error(`${res.status} ${res.statusText}`);
+        }
+
+        const blob = await res.blob();
+        return URL.createObjectURL(blob);
+    } catch (err) {
+        console.error('Unable to call GET /v1/fragments/:id', { err });
+    }
+}
+
+export async function deleteFragment(user, id) {
+    try {
+        const res = await fetch(`${apiUrl}/v1/fragments/${id}`, {
+            headers: user.authorizationHeaders(),
+            method: 'DELETE',
+        });
+
+        if (!res.ok) {
+            throw new Error(`${res.status} ${res.statusText}`);
+        }
+    } catch (err) {
+        console.error('Unable to call DELETE /v1/fragments/:id', { err });
+    }
+}
+
+export async function updateFragment(user, id, content, contentType) {
+    try {
+        console.log('USER', user);
+        const headers = { 'Content-Type': contentType };
+        headers['Authorization'] = `Bearer ${user.idToken}`;
+
+        const res = await fetch(`${apiUrl}/v1/fragments/${id}`, {
+            headers: headers,
+            method: 'PUT',
+            crossDomain: true,
+            body: content,
+        });
+
+        if (!res.ok) {
+            throw new Error(`${res.status} ${res.statusText}`);
+        }
+        const data = await res.text();
+        console.log('Fragment has been updated', { data });
+    } catch (err) {
+        console.error('Unable to call PUT /v1/fragments/:id', { err });
+    }
+}
