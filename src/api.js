@@ -20,8 +20,6 @@ export async function getUserFragments(user) {
 
 export async function postFragment(user, content, contentType) {
     try {
-        console.log('user idToken', user.idToken);
-
         if (!contentType) {
             contentType = 'text/plain';
         }
@@ -65,7 +63,6 @@ export async function viewFragment(user, id, type) {
             const url = URL.createObjectURL(blob);
             return url;
         }
-        console.log('RESPONSE', res.body, content);
         return content;
     } catch (err) {
         console.error('Unable to call GET /v1/fragments/:id', { err });
@@ -73,13 +70,12 @@ export async function viewFragment(user, id, type) {
 }
 
 export async function convertFragment(user, id, ext) {
-    console.log('CONVERTING FRAGMENT REQUEST', id, ext);
     try {
         const res = await fetch(`${apiUrl}/v1/fragments/${id}.${ext}`, {
             headers: user.authorizationHeaders(),
             method: 'GET',
         });
-        console.log('RESPONSE', res.body, ext);
+
         if (!res.ok) {
             throw new Error(`${res.status} ${res.statusText}`);
         }
@@ -108,7 +104,9 @@ export async function deleteFragment(user, id) {
 
 export async function updateFragment(user, id, content, contentType) {
     try {
-        console.log('USER', user);
+        if (!contentType) {
+            contentType = 'text/plain';
+        }
         const headers = { 'Content-Type': contentType };
         headers['Authorization'] = `Bearer ${user.idToken}`;
 
@@ -122,8 +120,8 @@ export async function updateFragment(user, id, content, contentType) {
         if (!res.ok) {
             throw new Error(`${res.status} ${res.statusText}`);
         }
-        const data = await res.text();
-        console.log('Fragment has been updated', { data });
+        console.log('Fragment has been updated');
+        return await res.text();
     } catch (err) {
         console.error('Unable to call PUT /v1/fragments/:id', { err });
     }

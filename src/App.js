@@ -13,6 +13,7 @@ import {
     Avatar,
     IconButton,
     Input,
+    InputLabel,
     Paper,
     Divider,
     Link,
@@ -47,7 +48,7 @@ import { FileList } from './FileList';
 const typeList = ['TXT', 'MD', 'HTML', 'JSON', 'PNG', 'JPG', 'GIF', 'WEBP'];
 
 function App() {
-    const [content, setContent] = useState();
+    const [content, setContent] = useState('');
     const [droppedFiles, setDroppedFiles] = useState([]);
     const [contentType, setContentType] = useState('');
     const [fragments, setFragments] = useState([]);
@@ -59,6 +60,8 @@ function App() {
     const [downloadLink, setDownloadLink] = useState('');
     const [convertError, setConvertError] = useState('');
     const [activeFragmentId, setActiveFragmentId] = useState('');
+    const [updateSuccessMessage, setUpdateSuccessMessage] = useState('');
+    const [updateErrorMessage, setUpdateErrorMessage] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
     const handleClick = (e) => {
@@ -76,8 +79,13 @@ function App() {
         setConvertError('');
         setConvertType('');
         setActiveFragmentId('');
+        setContentType('');
     };
-    const handleUpdateClose = () => setUpdateOpen(false);
+    const handleUpdateClose = () => {
+        setUpdateOpen(false);
+        setUpdateSuccessMessage('');
+        setUpdateErrorMessage('');
+    };
 
     async function init() {
         const userSection = document.querySelector('#user');
@@ -100,7 +108,6 @@ function App() {
         }
         const data = await getUserFragments(user);
         setFragments(data.fragments);
-        console.log({ user });
 
         userSection.hidden = false;
         userSection.innerText = user.username;
@@ -112,7 +119,7 @@ function App() {
         const user = await getUser();
 
         await postFragment(user, content, contentType);
-        setContent(null);
+        setContent('');
         const data = await getUserFragments(user);
         setFragments(data.fragments);
 
@@ -131,7 +138,6 @@ function App() {
         setActiveFragmentId(id);
 
         const user = await getUser();
-        console.log('ACTIVE FRAGMENT ID', activeFragmentId);
         const data = await viewFragment(user, id, type);
         setViewContent(data);
     }
@@ -147,24 +153,42 @@ function App() {
         setDownloadLink(blobURL);
     }
 
-    async function updateClicked(e) {
+    async function updateClicked(id, type) {
         setUpdateOpen(true);
         setContentType('');
-        const fragmentId = e.target.id.replace('update-', '');
-        setActiveFragmentId(fragmentId);
+
+        setActiveFragmentId(id);
         const user = await getUser();
-        const data = await viewFragment(user, activeFragmentId);
-        setViewContent(data);
+        const data = await viewFragment(user, id, type);
+        if (type.startsWith('text/')) {
+            setContent(data);
+        }
     }
 
     async function updateContent() {
-        const user = await getUser();
-        await updateFragment(user, activeFragmentId, content);
-        setContent(null);
+        setUpdateSuccessMessage('');
+        setUpdateErrorMessage('');
 
-        const data = await getUserFragments(user);
-        setFragments(data.fragments);
+        const user = await getUser();
+        const res = await updateFragment(
+            user,
+            activeFragmentId,
+            content,
+            contentType
+        );
+
+        if (!res) {
+            setUpdateErrorMessage(
+                'Fragment could not be updated. Make sure of valid content type and try again.'
+            );
+        } else {
+            setUpdateSuccessMessage('Fragment has been updated successfully!');
+            const data = await getUserFragments(user);
+            setFragments(data.fragments);
+        }
+        setContent('');
         setContentType('');
+        document.getElementById('file-update').value = '';
     }
 
     async function deleteClicked(id) {
@@ -630,7 +654,11 @@ function App() {
                                                                 id={`update-${fragment.id}`}
                                                                 onClick={(e) =>
                                                                     updateClicked(
-                                                                        e
+                                                                        e.target.id.replace(
+                                                                            'update-',
+                                                                            ''
+                                                                        ),
+                                                                        fragment.type
                                                                     )
                                                                 }>
                                                                 Update
@@ -711,29 +739,97 @@ function App() {
                                                                                 }
                                                                                 onChange={(
                                                                                     e
-                                                                                ) =>
+                                                                                ) => {
+                                                                                    setUpdateSuccessMessage(
+                                                                                        ''
+                                                                                    );
+                                                                                    setUpdateErrorMessage(
+                                                                                        ''
+                                                                                    );
                                                                                     setContent(
                                                                                         e
                                                                                             .target
                                                                                             .value
-                                                                                    )
-                                                                                }
+                                                                                    );
+                                                                                }}
                                                                             />
                                                                             <Input
+                                                                                id='file-update'
+                                                                                name='file-update'
+                                                                                color='primary'
                                                                                 sx={{
-                                                                                    mt: 2,
+                                                                                    my: 2,
                                                                                     width: '100%',
                                                                                 }}
                                                                                 type='file'
                                                                                 accept='.txt, .md, .html, .json, .png, .jpg, .gif, .webp'
-                                                                            />
-                                                                            <Divider
-                                                                                sx={{
-                                                                                    marginTop: 3,
-                                                                                    marginBottom: 2,
+                                                                                inputComponent={
+                                                                                    'input'
+                                                                                }
+                                                                                onChange={(
+                                                                                    e
+                                                                                ) => {
+                                                                                    setUpdateSuccessMessage(
+                                                                                        ''
+                                                                                    );
+                                                                                    setUpdateErrorMessage(
+                                                                                        ''
+                                                                                    );
+                                                                                    setContent(
+                                                                                        ''
+                                                                                    );
+                                                                                    const file =
+                                                                                        e
+                                                                                            .target
+                                                                                            .files[0];
+                                                                                    if (
+                                                                                        file
+                                                                                    ) {
+                                                                                        const reader =
+                                                                                            new FileReader();
+                                                                                        reader.readAsArrayBuffer(
+                                                                                            file
+                                                                                        );
+                                                                                        setContentType(
+                                                                                            file.type
+                                                                                        );
+                                                                                        reader.onload =
+                                                                                            (
+                                                                                                e
+                                                                                            ) =>
+                                                                                                setContent(
+                                                                                                    e
+                                                                                                        .target
+                                                                                                        .result
+                                                                                                );
+                                                                                    }
                                                                                 }}
                                                                             />
+                                                                            {updateSuccessMessage ? (
+                                                                                <Alert severity='success'>
+                                                                                    {
+                                                                                        updateSuccessMessage
+                                                                                    }
+                                                                                </Alert>
+                                                                            ) : (
+                                                                                ''
+                                                                            )}
+                                                                            {updateErrorMessage ? (
+                                                                                <Alert severity='warning'>
+                                                                                    {
+                                                                                        updateErrorMessage
+                                                                                    }
+                                                                                </Alert>
+                                                                            ) : (
+                                                                                ''
+                                                                            )}
                                                                         </Container>
+                                                                        <Divider
+                                                                            sx={{
+                                                                                marginTop: 3,
+                                                                                marginBottom: 2,
+                                                                            }}
+                                                                        />
                                                                         <Container
                                                                             sx={{
                                                                                 display:
