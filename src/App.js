@@ -13,7 +13,6 @@ import {
     Avatar,
     IconButton,
     Input,
-    InputLabel,
     Paper,
     Divider,
     Link,
@@ -33,7 +32,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import ReactJson from 'react-json-view';
+import { JsonViewer } from '@textea/json-viewer';
 import { Auth, getUser } from './auth';
 import {
     deleteFragment,
@@ -261,12 +260,12 @@ function App() {
                                 width: 600,
                                 height: 300,
                             }}>
-                            {/* <Avatar sx={{ m: 1, bgcolor: 'primary.info' }}>
-                        <LockIcon />
-                    </Avatar>
-                    <Typography component='h1' variant='h5'>
-                        Log In
-                    </Typography> */}
+                            <Avatar sx={{ m: 1, bgcolor: 'primary.info' }}>
+                                <LockIcon />
+                            </Avatar>
+                            <Typography component='h1' variant='h5'>
+                                Sign up
+                            </Typography>
                             <TextField
                                 margin='normal'
                                 required
@@ -376,10 +375,8 @@ function App() {
                             </Box>
                         </Container>
 
-                        <Container maxWidth='lg'>
-                            <TableContainer
-                                component={Paper}
-                                sx={{ width: '100%' }}>
+                        <Container>
+                            <TableContainer component={Paper}>
                                 <Table aria-label='fragment metadata table'>
                                     <TableHead>
                                         <TableRow>
@@ -388,7 +385,7 @@ function App() {
                                             <TableCell>Updated</TableCell>
                                             <TableCell>Content Type</TableCell>
                                             <TableCell>Size</TableCell>
-                                            <TableCell>Modify</TableCell>
+                                            <TableCell>Actions</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -582,8 +579,8 @@ function App() {
                                                                                 ) : contentType.startsWith(
                                                                                       'application'
                                                                                   ) ? (
-                                                                                    <ReactJson
-                                                                                        src={
+                                                                                    <JsonViewer
+                                                                                        value={
                                                                                             viewContent
                                                                                         }
                                                                                     />
